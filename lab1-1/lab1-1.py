@@ -4,17 +4,65 @@ import numpy as np
 def splitRGB(img):
     # TODO
 
+    R_map = np.zeros(img.shape)
+    R_map[:,:,2] = img[:,:,2]
+    G_map = np.zeros(img.shape)
+    G_map[:,:,1] = img[:,:,1]
+    B_map = np.zeros(img.shape)
+    B_map[:,:,0] = img[:,:,0]
+
+
     return R_map, G_map, B_map
 
 def splitHSV(img):
     # TODO
-
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    H_map,S_map,V_map = cv2.split(hsv)
     return H_map, S_map, V_map
+
+
+def GetBilinearPixel(imArr, posX, posY):
+	out = []
+ 
+	#Get integer and fractional parts of numbers
+	modXi = int(posX)
+	modYi = int(posY)
+	modXf = posX - modXi
+	modYf = posY - modYi
+	modXiPlusOneLim = min(modXi+1,imArr.shape[1]-1)
+	modYiPlusOneLim = min(modYi+1,imArr.shape[0]-1)
+ 
+	#Get pixels in four corners
+	for chan in range(imArr.shape[2]):
+		bl = imArr[modYi, modXi, chan]
+		br = imArr[modYi, modXiPlusOneLim, chan]
+		tl = imArr[modYiPlusOneLim, modXi, chan]
+		tr = imArr[modYiPlusOneLim, modXiPlusOneLim, chan]
+ 
+		#Calculate interpolation
+		b = modXf * br + (1. - modXf) * bl
+		t = modXf * tr + (1. - modXf) * tl
+		pxf = modYf * t + (1. - modYf) * b
+		out.append(int(pxf+0.5))
+ 
+	return out
 
 def resize(img, size):
     # TODO
 
+    shape = list(map(int, [img.shape[0]*size, img.shape[1]*size, img.shape[2]]))
+    img_t = np.empty(shape, dtype=np.uint8)
+    rowScale = float(img.shape[0]) / float(img_t.shape[0])
+    colScale = float(img.shape[1]) / float(img_t.shape[1])
+    for r in range(img_t.shape[0]):
+    	for c in range(img_t.shape[1]):
+    		orir = r * rowScale
+    		oric = c * colScale
+    		img_t[r,c]=GetBilinearPixel(img,oric,orir)
+
     return img_t
+
+
 
 class MotionDetect(object):
     """docstring for MotionDetect"""
