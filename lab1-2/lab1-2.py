@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 def gammaCorrection(img, gamma=1.0):
     # Build a lookup table mapping the pixel values [0, 255] to their adjusted gamma values
     # TODO
+    invGamma = 1.0 / gamma
+    table = np.array([((i/255.0) ** invGamma) * 255 for i in np.arange(0,256)]).astype("uint8")
 
     # Apply gamma correction using the lookup table
     # TODO
-
+    img_g=cv2.LUT(img,table)
     return img_g
 
 def histEq(gray):
@@ -19,12 +21,20 @@ def histEq(gray):
 
     # Convert the histogram to Cumulative Distribution Function
     # TODO
+    cdf = hist.cumsum()
+    cdf_normalized = cdf * hist.max()/ cdf.max()
 
     # Build a lookup table mapping the pixel values [0, 255] to their new grayscale value
     # TODO
 
+    cdf_m = np.ma.masked_equal(cdf,0)
+    cdf_m = (cdf_m - cdf_m.min())*255/(cdf_m.max()-cdf_m.min())
+    cdf = np.ma.filled(cdf_m,0).astype('uint8')
+
+    
     # Apply histogram equalization using the lookup table
     # TODO
+    img_h = cdf[img]
 
     return img_h
 
