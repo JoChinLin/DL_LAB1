@@ -81,7 +81,7 @@ class MotionDetect(object):
 
         # Extract motion part (hint: motion part mask = difference between image and avg > threshold)
         # TODO
-
+        motion_part = img - (avg_map > threshold)
         # Mask out unmotion part (hint: set the unmotion part to 0 with mask)
         # TODO
 
