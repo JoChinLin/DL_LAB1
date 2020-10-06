@@ -72,7 +72,7 @@ class MotionDetect(object):
         self.shape = shape
         self.avg_map = np.zeros((self.shape[0], self.shape[1]), dtype='float')
         self.alpha = 0.8 # you can ajust your value
-        self.threshold = 40 # you can ajust your value
+        self.threshold = 200 # you can ajust your value
 
         print("MotionDetect init with shape {}".format(self.shape))
 
@@ -83,23 +83,23 @@ class MotionDetect(object):
         # Extract motion part (hint: motion part mask = difference between image and avg > threshold)
         # TODO
 
-        motion_part = img - (avg_map > threshold)
-
         motion_map = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        Motion = motion_map - self.avg_map
-        ret, mask = cv2.threshold(Motion,self.threshold,255,cv2.THRESH_BINARY)
+        Motion = cv2.absdiff(motion_map, cv2.convertScaleAbs(self.avg_map))
+        Motion = (Motion * 255).astype("uint8")
+        # Motion = cv2.absdiff(motion_map, self.avg_map)
+        # ret, mask = cv2.threshold(Motion, self.threshold, 255, cv2.THRESH_BINARY)
 
+        mask = Motion > (self.threshold)
         # Mask out unmotion part (hint: set the unmotion part to 0 with mask)
         # TODO
-
-        motion_map[~mask] = [0, 0, 0]
-
+        motion_map[~mask] = 0
+        
         # Update avg_map
         # TODO
 
-        self.avg_map = self.avg_map*alpha + motion_map*(1-alpha)
+        self.avg_map = self.avg_map*self.alpha + motion_map*(1-self.alpha)
 
-
+        
         return motion_map
 
 
@@ -152,16 +152,17 @@ name = "../data.mp4"
 # Input reader
 cap = cv2.VideoCapture(name)
 fps = cap.get(cv2.CAP_PROP_FPS)
+print(fps)
 h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
 # Output writer
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output1.avi', fourcc, fps, (w, h), True)
+out = cv2.VideoWriter('output1.avi', fourcc, fps, (w, h),True)
 
 # Motion detector
 mt = MotionDetect(shape=(h,w,3))
-frames=0
+
 # Read video frame by frame
 while True:
     # Get 1 frame
@@ -169,7 +170,7 @@ while True:
 
     if success:
         motion_map = mt.getMotion(frame)
-
+        motion_map=cv2.cvtColor(motion_map,cv2.COLOR_GRAY2BGR)
         # Write 1 frame to output video
         out.write(motion_map)
     else:
@@ -178,3 +179,4 @@ while True:
 # Release resource
 cap.release()
 out.release()
+
