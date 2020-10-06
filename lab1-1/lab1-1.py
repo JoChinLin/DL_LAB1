@@ -82,14 +82,13 @@ class MotionDetect(object):
 
         # Extract motion part (hint: motion part mask = difference between image and avg > threshold)
         # TODO
-<<<<<<< HEAD
+
         motion_part = img - (avg_map > threshold)
-=======
+
         motion_map = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         Motion = motion_map - self.avg_map
         ret, mask = cv2.threshold(Motion,self.threshold,255,cv2.THRESH_BINARY)
 
->>>>>>> 0b2137226c1a01e1a97e4e4bf7b7fb6251252304
         # Mask out unmotion part (hint: set the unmotion part to 0 with mask)
         # TODO
 
